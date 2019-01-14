@@ -28,3 +28,9 @@ context.lineWidth = 4;
         draw = false;
     });
 })();
+
+const submit = $("button");
+submit.on("click", function(e) {
+    let secret = canv.toDataURL();
+    hidden.val(secret);
+});

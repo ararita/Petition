@@ -1,36 +1,19 @@
 const spicedPg = require("spiced-pg");
 const { dbUser, dbPass } = require("./secrets");
-const db = spicedPg(
-    "postgres:postgres:postgres@localhost:5432/petition"
+const db = spicedPg(`postgres:${dbUser}:${dbPass}@localhost:5432/petition`);
 
-    //ovaj drugi postgress je user a treci je password, ali bolje je nemat osobne podatke u kodu i commit them, zato radimo secerts.json, ali prije toga idemo u git ignore i navedemo tamo secrets.json
-);
+// module.exports.addSignature = (userFirstName, userLastName, sig) => {
+//     return db.query(
+//         `INSERT INTO signatures (userFirstName,userLastName, sig) VALUES ($1, $2, $3)`,
+//         [userFirstName, userLastName, sig]
+//     );
+// };
 
-db.query(
-    //`INSERT INTO cities (city, population)
-    //VALUE ('Gotham': 1000001)
-    //RETURNING *`
-    //this means when we insert only uts omething into database, but returning we need to see it; its useful cause we can see the id;
-    `SELECT * FROM petition
-    WHERE population > 15000`
-)
-    .then(({ rows }) => {
-        //rerturns a promise, or pass the callback; 3 arguments, first one is a query
-        console.log(rows);
-    })
-    .catch(err => console.log(err)); //the promise will not be resolved if theres an error;
-
-// for the prject: create a file, maybe db.js, and in thetre cretae fns that call, put your db stuff in module. so oither codes need to know nothing about postgres
-module.exports.addCity = function(city, country, population) {
+module.exports.signPetition = function(first, last, sig) {
     return db.query(
-        `INSERT INTO petition (city, country, population)
-        VALUES($1, $2, $3)`
-        //ali ovo je hardcoded, we need to do it safe, node postgres module can do it for us:
-        // in db.query:
-        // VALUES($1, $2, $3)
-        //[city, country, population]
-        //any time we use parameters, we shall do it this way, not for expamle VALUES ({$city}) etc
+        `INSERT INTO signatures (first, last, signature)
+        VALUES ($1, $2, $3) RETURNING id
+        `,
+        [first || null, last || null, sig || null]
     );
-    //     module.exports.addCity = function(city, country, population) {
-    //         return db.query(`DELETE FROM cities WHERE id = $1`, [id])
 };

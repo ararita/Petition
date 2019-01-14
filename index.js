@@ -39,13 +39,18 @@ app.get("/signers", (req, res) => {
     });
 });
 
+app.get("/profile", (req, res) => {
+    res.render("profile", {
+        layout: "main"
+    });
+});
 app.post("/petition", function(req, res) {
     const firstName = req.body.first;
     const lastName = req.body.last;
 
     if (firstName && lastName) {
         // calldb();
-        res.cookie("perdsonCookie", firstName + lastName);
+        res.cookie("personCookie", firstName + lastName);
         res.redirect("thanks");
         console.log(req.body);
     } else {
