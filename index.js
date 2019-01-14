@@ -6,6 +6,15 @@ const app = express();
 const db = require("./db");
 
 const hb = require("express-handlebars");
+const cookieSession = require("cookie-session");
+
+app.use(
+    cookieSession({
+        secret: `I'm always angry.`,
+        maxAge: 1000 * 60 * 60 * 24 * 14
+    })
+);
+
 app.use(
     bodyParser.urlencoded({
         extended: false
@@ -15,7 +24,7 @@ app.engine("handlebars", hb());
 
 app.set("view engine", "handlebars");
 
-app.use(require("cookie-parser")());
+// app.use(require("cookie-parser")()); --ovo ne trebamo vise jer koristimo cookie session middleware
 app.use(express.static(__dirname + "/public"));
 
 //1. GET /petition
@@ -34,9 +43,19 @@ app.get("/thanks", (req, res) => {
 });
 
 app.get("/signers", (req, res) => {
-    res.render("signers", {
-        layout: "main"
-    });
+    db.getSigners()
+        .then(function(signers) {
+            res.render("signers", {
+                signers: signers.rows,
+                layout: "main"
+            });
+        })
+        .catch(function(err) {
+            res.render("petition", {
+                layout: "main",
+                error: "error"
+            });
+        });
 });
 
 app.get("/profile", (req, res) => {
@@ -47,8 +66,10 @@ app.get("/profile", (req, res) => {
 app.post("/petition", function(req, res) {
     const firstName = req.body.first;
     const lastName = req.body.last;
+    const signature = req.body.signature;
 
     if (firstName && lastName) {
+        db.addSignature(firstName, lastName, signature);
         // calldb();
         res.cookie("personCookie", firstName + lastName);
         res.redirect("thanks");
@@ -59,6 +80,15 @@ app.post("/petition", function(req, res) {
             error: "error"
         });
     }
+});
+
+//send user info to sql table
+db.signPetition(signature).then(function() {
+    // take the id that INSERT query generates and put that in cookie, isntead of putting 1
+    req.session.signatureId = 1;
+    //req.session.first = "vesna"; ali trebamo samo id(iznad)
+    console.log("req.session ", req.session);
+    res.redirect("/thanks");
 });
 
 //run a function from db that insert first last and signture in datadase
