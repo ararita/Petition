@@ -1,12 +1,14 @@
 const express = require("express");
 const bodyParser = require("body-parser");
-
+const csurf = require("csurf");
 const app = express();
-
 const db = require("./db");
-
 const hb = require("express-handlebars");
 const cookieSession = require("cookie-session");
+const middleware = require("./middleware");
+const bcrypt = require("./bcrypt");
+
+app.disable("x-powered-by"); //removes the X-Powered-By header
 
 app.use(
     cookieSession({
@@ -14,6 +16,14 @@ app.use(
         maxAge: 1000 * 60 * 60 * 24 * 14
     })
 );
+
+app.use(function(req, res, next) {
+    if (!req.session.userId && req.url != "/register" && req.url != "/login") {
+        res.redirect("/register");
+    } else {
+        next();
+    }
+});
 
 app.use(
     bodyParser.urlencoded({
@@ -27,22 +37,136 @@ app.set("view engine", "handlebars");
 // app.use(require("cookie-parser")()); --ovo ne trebamo vise jer koristimo cookie session middleware
 app.use(express.static(__dirname + "/public"));
 
-//1. GET /petition
-// * renders petition template
+app.use(csurf()); //mora biti iza cookie sessiona i body parsera
 
-app.get("/petition", (req, res) => {
-    res.render("petition", {
+app.use((req, res, next) => {
+    res.locals.csrfToken = req.csrfToken();
+    res.setHeader("X-Frame-Options", "DENY");
+    next();
+});
+
+//route handler
+
+app.get("/", (req, res) => {
+    if (req.session.signatureId) {
+        res.redirect("/thanks");
+    } else {
+        res.render("petition", {
+            layout: "main"
+        });
+    }
+});
+
+app.get("/register", middleware.requireLoggedOutUser, function(req, res) {
+    res.render("register", {
         layout: "main"
     });
 });
 
-app.get("/thanks", (req, res) => {
-    res.render("thanks", {
+app.post("/register", middleware.requireLoggedOutUser, function(req, res) {
+    if (
+        !req.body.first ||
+        !req.body.last ||
+        !req.body.email ||
+        !req.body.password
+    ) {
+        console.log(req.body);
+        res.render("register", {
+            layout: "main",
+            error: "error"
+        });
+    } else {
+        bcrypt
+            .hashPassword(req.body.password)
+            .then(function(hash) {
+                db.registerUser(
+                    req.body.first,
+                    req.body.last,
+                    req.body.email,
+                    hash
+                )
+                    .then(function(result) {
+                        req.session.userId = result.rows[0].id;
+                        res.redirect("/petition");
+                    })
+                    .catch(function(err) {
+                        if (err) {
+                            console.log("ERROR", err);
+                            res.render("register", {
+                                layout: "main",
+                                error: "error"
+                            });
+                        }
+                    });
+            })
+            .catch(function(err) {
+                if (err) {
+                    console.log("ERROR", err);
+                    res.render("register", {
+                        layout: "main",
+                        error: "error"
+                    });
+                }
+            });
+    }
+});
+
+app.get("/login", middleware.requireLoggedOutUser, function(req, res) {
+    res.render("login", {
         layout: "main"
     });
 });
 
-app.get("/signers", (req, res) => {
+app.post("/login", middleware.requireLoggedOutUser, function(req, res) {
+    if (req.body.email && req.body.password) {
+        db.getUserPass(req.body.email)
+            .then(function(password) {
+                return bcrypt
+                    .compare(req.body.password, password.rows[0].password)
+                    .then(function(bool) {
+                        if (bool == true) {
+                            req.session.userId = password.rows[0].id;
+                            res.redirect("/petition");
+                        } else {
+                            res.render("login", {
+                                layout: "main",
+                                error: true
+                            });
+                        }
+                    });
+            })
+            .catch(function(err) {
+                res.render("login", {
+                    layout: "main",
+                    error: "error"
+                });
+            });
+    } else {
+        res.render("login", {
+            layout: "main",
+            error: true
+        });
+    }
+});
+
+app.get("/thanks", middleware.requireSiganture, function(req, res) {
+    db.getSig(req.session.signatureId)
+        .then(function(result) {
+            console.log("result final: ", result.rows);
+            res.render("thanks", {
+                layout: "main",
+                sig: result.rows[0].signature //this is url
+            });
+        })
+        .catch(function(err) {
+            res.render("petition", {
+                layout: "main",
+                error: "error"
+            });
+        });
+});
+
+app.get("/signers", middleware.requireSiganture, function(req, res) {
     db.getSigners()
         .then(function(signers) {
             res.render("signers", {
@@ -58,22 +182,34 @@ app.get("/signers", (req, res) => {
         });
 });
 
-app.get("/profile", (req, res) => {
-    res.render("profile", {
-        layout: "main"
-    });
+// app.get("/profile", (req, res) => {
+//     res.render("profile", {
+//         layout: "main"
+//     });
+// });
+app.get("/petition", middleware.requireNoSiganture, function(req, res) {
+    if (req.session.signatureId) {
+        res.redirect("/thanks");
+    } else {
+        res.render("petition", {
+            layout: "main"
+        });
+    }
 });
-app.post("/petition", function(req, res) {
+
+app.post("/petition", middleware.requireNoSiganture, function(req, res) {
     const firstName = req.body.first;
     const lastName = req.body.last;
     const signature = req.body.signature;
 
-    if (firstName && lastName) {
-        db.addSignature(firstName, lastName, signature);
-        // calldb();
-        res.cookie("personCookie", firstName + lastName);
-        res.redirect("thanks");
-        console.log(req.body);
+    if (firstName && lastName && signature) {
+        db.addSignature(firstName, lastName, signature).then(result => {
+            // console.log("result: ", result);
+            req.session.signatureId = result.rows[0].id;
+            res.cookie("personCookie", firstName + lastName);
+            res.redirect("thanks");
+            // console.log(req.body);
+        });
     } else {
         res.render("petition", {
             layout: "main",
@@ -82,19 +218,12 @@ app.post("/petition", function(req, res) {
     }
 });
 
-//send user info to sql table
-db.signPetition(signature).then(function() {
-    // take the id that INSERT query generates and put that in cookie, isntead of putting 1
-    req.session.signatureId = 1;
-    //req.session.first = "vesna"; ali trebamo samo id(iznad)
-    console.log("req.session ", req.session);
-    res.redirect("/thanks");
+app.get("/logout", (req, res) => {
+    req.session = null;
+    res.render("logout", {
+        layout: "main"
+    });
 });
-
-//run a function from db that insert first last and signture in datadase
-//.then( redirect /thanks)
-//.catch( res.render(/petition))
-
 // db.addCity(req.body.city, req.body.country, req.body.pop).then(() => {
 //     res.render('success');
 // }).catch(err => {
