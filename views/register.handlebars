@@ -1,0 +1,19 @@
+<p>You need to register to sign the petition.</p>
+
+
+{{#if errorMessage}}
+<h4>{{errorMessage}}</h4>
+{{/if}}
+
+<form autocomplete="off" method="POST">
+        <input name="first" placeholder="first name" required>
+        <input name="last" placeholder="last name" required>
+        <input type="email" placeholder="email address" required name="email">
+        <input type="password" id="pass" placeholder="password" name="password" required>
+        <input name="_csrf" type="hidden" value="{{csrfToken}}">
+        <button id="submit-button">submit</button>
+
+</form>
+
+
+<p>If you are already a member click<a href="/login">here</a>to log in</p>

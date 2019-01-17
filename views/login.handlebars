@@ -1,0 +1,13 @@
+<p>Please log in.</p>
+
+
+{{#if errorMessage}}
+<h4>{{errorMessage}}</h4>
+
+{{/if}}
+<form autocomplete="off" method="POST">
+        <input type="email" placeholder="email address" required name="email">
+        <input type="password" id="pass" placeholder="password" name="password" required>
+        <input name="_csrf" type="hidden" value="{{csrfToken}}">
+        <button id="submit-button">submit</button>
+</form>
