@@ -22,6 +22,19 @@ module.exports.addProfile = (age, city, homepage, userId) => {
     );
 };
 
+module.exports.getCity = function(city) {
+    return db.query(
+        `SELECT users.first AS first, users.last AS last, user_profiles.age AS age, user_profiles.city AS city, user_profiles.url AS url
+        FROM signatures
+        LEFT JOIN users
+        ON signatures.user_id = users.id
+        LEFT JOIN user_profiles
+        ON signatures.user_id = user_profiles.user_id
+        WHERE LOWER(city) = LOWER($1);
+        `
+    );
+};
+
 module.exports.getSigners = function() {
     return db
         .query(
