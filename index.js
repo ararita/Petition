@@ -48,7 +48,7 @@ app.use((req, res, next) => {
 //route handler
 
 app.get("/", (req, res) => {
-    if (req.session.signatureId) {
+    if (req.session.signId) {
         res.redirect("/thanks");
     } else {
         res.render("petition", {
@@ -73,7 +73,8 @@ app.post("/register", middleware.requireLoggedOutUser, function(req, res) {
         console.log(req.body);
         res.render("register", {
             layout: "main",
-            error: "error"
+            errorMessage:
+                "Ooops, something went wrong! Make sure you filled all the required fields!"
         });
     } else {
         bcrypt
@@ -94,7 +95,7 @@ app.post("/register", middleware.requireLoggedOutUser, function(req, res) {
                             console.log("ERROR", err);
                             res.render("register", {
                                 layout: "main",
-                                error: "error"
+                                errorMessage: "An error has occured!"
                             });
                         }
                     });
@@ -104,7 +105,7 @@ app.post("/register", middleware.requireLoggedOutUser, function(req, res) {
                     console.log("ERROR", err);
                     res.render("register", {
                         layout: "main",
-                        error: "error"
+                        errorMessage: "Something went wrong!"
                     });
                 }
             });
@@ -150,7 +151,7 @@ app.post("/login", middleware.requireLoggedOutUser, function(req, res) {
 });
 
 app.get("/thanks", middleware.requireSiganture, function(req, res) {
-    db.getSig(req.session.signatureId)
+    db.getSig(req.session.sigId)
         .then(function(result) {
             console.log("result final: ", result.rows);
             res.render("thanks", {
@@ -161,7 +162,7 @@ app.get("/thanks", middleware.requireSiganture, function(req, res) {
         .catch(function(err) {
             res.render("petition", {
                 layout: "main",
-                error: "error"
+                errorMessage: err.message
             });
         });
 });
@@ -177,7 +178,7 @@ app.get("/signers", middleware.requireSiganture, function(req, res) {
         .catch(function(err) {
             res.render("petition", {
                 layout: "main",
-                error: "error"
+                errorMessage: err.message
             });
         });
 });
@@ -187,8 +188,10 @@ app.get("/signers", middleware.requireSiganture, function(req, res) {
 //         layout: "main"
 //     });
 // });
-app.get("/petition", middleware.requireNoSiganture, function(req, res) {
-    if (req.session.signatureId) {
+
+//petition not working, not redirecting to thanks, rendering {{error}}
+app.get("/petition", function(req, res) {
+    if (req.session.sigId) {
         res.redirect("/thanks");
     } else {
         res.render("petition", {
@@ -197,25 +200,27 @@ app.get("/petition", middleware.requireNoSiganture, function(req, res) {
     }
 });
 
-app.post("/petition", middleware.requireNoSiganture, function(req, res) {
+app.post("/petition", (req, res) => {
     const firstName = req.body.first;
     const lastName = req.body.last;
     const signature = req.body.signature;
+    const userId = req.session.userId;
 
-    if (firstName && lastName && signature) {
-        db.addSignature(firstName, lastName, signature).then(result => {
-            // console.log("result: ", result);
-            req.session.signatureId = result.rows[0].id;
+    db.addSignature(firstName, lastName, signature, userId)
+        .then(result => {
+            console.log("result: ", result);
+            req.session.sigId = result.rows[0].id;
             res.cookie("personCookie", firstName + lastName);
-            res.redirect("thanks");
-            // console.log(req.body);
+            res.redirect("/thanks");
+            console.log("req.body: ", req.body);
+        })
+        .catch(function(err) {
+            console.log("error: ", err);
+            res.render("petition", {
+                errorMessage: true,
+                layout: "main"
+            });
         });
-    } else {
-        res.render("petition", {
-            layout: "main",
-            error: "error"
-        });
-    }
 });
 
 app.get("/logout", (req, res) => {
@@ -224,11 +229,5 @@ app.get("/logout", (req, res) => {
         layout: "main"
     });
 });
-// db.addCity(req.body.city, req.body.country, req.body.pop).then(() => {
-//     res.render('success');
-// }).catch(err => {
-//     console.log(err);
-//     res.render('error')
-// });
 
 app.listen(8080, () => console.log("listening"));
