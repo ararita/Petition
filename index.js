@@ -95,11 +95,12 @@ app.post("/register", middleware.requireLoggedOutUser, function(req, res) {
                             console.log("ERROR", err);
                             res.render("register", {
                                 layout: "main",
-                                errorMessage: "An error has occured!"
+                                errorMessage:
+                                    "You're already a member, please log in"
                             });
                         }
                     });
-            })
+            }) //check with somebody what kind of error we handle here
             .catch(function(err) {
                 if (err) {
                     console.log("ERROR", err);
@@ -131,7 +132,8 @@ app.post("/login", middleware.requireLoggedOutUser, function(req, res) {
                         } else {
                             res.render("login", {
                                 layout: "main",
-                                error: true
+                                errorMessage:
+                                    "Invalid email address or password"
                             });
                         }
                     });
@@ -139,13 +141,13 @@ app.post("/login", middleware.requireLoggedOutUser, function(req, res) {
             .catch(function(err) {
                 res.render("login", {
                     layout: "main",
-                    error: "error"
+                    errorMessage: "Invalid email address or password"
                 });
             });
     } else {
         res.render("login", {
             layout: "main",
-            error: true
+            errorMessage: "new error"
         });
     }
 });
@@ -168,8 +170,10 @@ app.get("/thanks", middleware.requireSiganture, function(req, res) {
 });
 
 app.get("/signers", middleware.requireSiganture, function(req, res) {
+    console.log("whatever");
     db.getSigners()
         .then(function(signers) {
+            console.log("signers: ", signers);
             res.render("signers", {
                 signers: signers.rows,
                 layout: "main"
@@ -189,7 +193,6 @@ app.get("/signers", middleware.requireSiganture, function(req, res) {
 //     });
 // });
 
-//petition not working, not redirecting to thanks, rendering {{error}}
 app.get("/petition", function(req, res) {
     if (req.session.sigId) {
         res.redirect("/thanks");
@@ -206,7 +209,7 @@ app.post("/petition", (req, res) => {
     const signature = req.body.signature;
     const userId = req.session.userId;
 
-    db.addSignature(firstName, lastName, signature, userId)
+    db.addSignature(signature, userId)
         .then(result => {
             console.log("result: ", result);
             req.session.sigId = result.rows[0].id;
@@ -217,7 +220,7 @@ app.post("/petition", (req, res) => {
         .catch(function(err) {
             console.log("error: ", err);
             res.render("petition", {
-                errorMessage: true,
+                errorMessage: err.message,
                 layout: "main"
             });
         });
