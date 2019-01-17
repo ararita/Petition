@@ -48,7 +48,8 @@ app.use((req, res, next) => {
 //route handler
 
 app.get("/", (req, res) => {
-    if (req.session.signId) {
+    if (req.session.sigId) {
+        //ako vec postoji signature u db-u
         res.redirect("/thanks");
     } else {
         res.render("petition", {
@@ -74,7 +75,7 @@ app.post("/register", middleware.requireLoggedOutUser, function(req, res) {
         res.render("register", {
             layout: "main",
             errorMessage:
-                "Ooops, something went wrong! Make sure you filled all the required fields!"
+                "Ooops, something went wrong! Make sure you filled all required fields!"
         });
     } else {
         bcrypt
@@ -88,11 +89,11 @@ app.post("/register", middleware.requireLoggedOutUser, function(req, res) {
                 )
                     .then(function(result) {
                         req.session.userId = result.rows[0].id;
-                        res.redirect("/petition");
+                        res.redirect("/profile");
                     })
                     .catch(function(err) {
                         if (err) {
-                            console.log("ERROR", err);
+                            // console.log("ERROR", err);
                             res.render("register", {
                                 layout: "main",
                                 errorMessage:
@@ -103,7 +104,7 @@ app.post("/register", middleware.requireLoggedOutUser, function(req, res) {
             }) //check with somebody what kind of error we handle here
             .catch(function(err) {
                 if (err) {
-                    console.log("ERROR", err);
+                    // console.log("ERROR", err);
                     res.render("register", {
                         layout: "main",
                         errorMessage: "Something went wrong!"
@@ -111,6 +112,34 @@ app.post("/register", middleware.requireLoggedOutUser, function(req, res) {
                 }
             });
     }
+});
+
+app.get("/profile", (req, res) => {
+    res.render("profile", {
+        layout: "main"
+    });
+});
+
+app.post("/profile", (req, res) => {
+    db.addProfile(
+        req.body.age,
+        req.body.city,
+        req.body.homepage, //not sure if i need req.body.url here
+        req.body.userId
+    ).then(function() {
+        res.redirect("/petiton");
+        //getting the message-> error: relation "user_profiles" does not exist
+    });
+});
+
+app.get("/signers/:city", (req, res) => {
+    const city = req.params.city;
+    db.getCity(city).then(function(signers) {
+        res.render("signers", {
+            layout: "main",
+            signers: signers.rows
+        });
+    });
 });
 
 app.get("/login", middleware.requireLoggedOutUser, function(req, res) {
@@ -147,7 +176,7 @@ app.post("/login", middleware.requireLoggedOutUser, function(req, res) {
     } else {
         res.render("login", {
             layout: "main",
-            errorMessage: "new error"
+            errorMessage: "All fields required"
         });
     }
 });
