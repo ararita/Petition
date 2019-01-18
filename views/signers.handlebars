@@ -1,11 +1,14 @@
 <h3>These are people that signed the petition so far:</h3>
 
-{{# signers}}<ul>
-	    {{#if url}}
-	    <li><a href="{{url}}">{{first}} {{last}}</a></li>
+{{# signers}}
+	<ul>
+	    <li>{{#if url}}
+	    <a class="links" href="{{url}}">{{first}} {{last}}</a>
 	    {{else}}
-	    <li>{{first}} {{last}}</li>
-	    {{/if}} {{age}} {{#city}}<a href="/signers/{{.}}">{{.}}</a>{{/city}}
-	</ul>{{/signers}}
+	    {{first}} {{last}}
+	    {{/if}} {{age}} {{#city}}
+		<a class="links" href="/signers/{{.}}">{{.}}</a></li>{{/city}}
+	</ul>
+{{/signers}}
 
-<h3>Click <a href="/logout">here</a>to log out</h3>
+<h3>Click <a href="/logout"> here </a>to log out</h3>
