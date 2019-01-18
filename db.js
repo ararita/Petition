@@ -31,8 +31,9 @@ module.exports.addProfile = (age, city, homepage, userId) => {
         ]
     );
 };
+//age ? Number(age) --> means user can only write a number, not a string
 
-module.exports.getCity = function(city) {
+module.exports.getSigners = function() {
     return db.query(
         `SELECT users.first AS first, users.last AS last, user_profiles.age AS age, user_profiles.city AS city, user_profiles.url AS url
         FROM signatures
@@ -40,31 +41,37 @@ module.exports.getCity = function(city) {
         ON signatures.user_id = users.id
         LEFT JOIN user_profiles
         ON signatures.user_id = user_profiles.user_id
-        WHERE LOWER(city) = LOWER($1);
         `
     );
 };
 
-module.exports.getSigners = function() {
-    return db
-        .query(
-            `SELECT first, last FROM signatures
+module.exports.getSignersByCity = function(city) {
+    return db.query(
+        `
+        SELECT users.first AS first, users.last AS last, user_profiles.age AS age, user_profiles.city AS city, user_profiles.url AS url
+        FROM signatures
         LEFT JOIN users
-        ON signatures.user_id = users.id`
-        )
-        .catch(err => {
-            console.log(err);
-        });
+        ON signatures.user_id = users.id
+        LEFT JOIN user_profiles
+        ON signatures.user_id = user_profiles.user_id
+        WHERE LOWER(city) = LOWER($1);
+        `,
+        [city]
+    );
 };
 
-// module.exports.signPetition = function(first, last, signature) {
-//     return db.query(
-//         `INSERT INTO signatures (first, last, signature)
-//         VALUES ($1, $2, $3) RETURNING id
-//         `,
-//         [first, last, signature]
-//     );
-// };
+// module.exports.getSigners = function() {
+//     //am i using it?
+//     return db
+//         .query(
+//             `SELECT first, last FROM signatures
+//         LEFT JOIN users
+//         ON signatures.user_id = users.id`
+//         )
+//         .catch(err => {
+//             console.log(err);
+//         });
+// }; ovo vise ne koristimo jer smo dodali get city
 
 module.exports.getSig = function(sigId) {
     return db.query(
@@ -92,12 +99,16 @@ module.exports.getUserInfo = function(email) {
 
 module.exports.getUserPass = function(email) {
     return db.query(
-        `SELECT password, id
+        `SELECT password, users.id, signatures.id
+        AS sig
         FROM users
+        LEFT JOIN signatures
+        ON signatures.user_id = users.id
         WHERE email = $1`,
         [email]
     );
 };
+//sig is a nickname for the id of signature
 
 module.exports.getUserId = function(email) {
     return db.query(
