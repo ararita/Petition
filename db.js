@@ -1,6 +1,16 @@
 const spicedPg = require("spiced-pg");
-const { dbUser, dbPass } = require("./secrets");
-const db = spicedPg(`postgres:${dbUser}:${dbPass}@localhost:5432/petition`);
+// const { dbUser, dbPass } = require("./secrets");
+// const db = spicedPg(`postgres:${dbUser}:${dbPass}@localhost:5432/petition`);
+
+let db;
+//if 'if' block runs, means our website sould talk to herokus postgres database
+if (process.env.DATABASE_URL) {
+    db = spicedPg(process.env.DATABASE_URL);
+} else {
+    const { dbUser, dbPass } = require("./secrets");
+
+    db = spicedPg(`postgres:${dbUser}:${dbPass}@localhost:5432/petition`);
+}
 
 module.exports.addSignature = (signature, userId) => {
     return db.query(
