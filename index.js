@@ -45,6 +45,15 @@ app.use((req, res, next) => {
     next();
 });
 
+//to make sure that person can't navigate anywhere if isn't registered
+app.use(function(req, res, next) {
+    if (!req.session.userId && req.url != "/register" && req.url != "/login") {
+        res.redirect("/register");
+    } else {
+        next();
+    }
+});
+
 //route handler
 
 app.get("/", (req, res) => {
@@ -124,17 +133,25 @@ app.post("/profile", (req, res) => {
     db.addProfile(
         req.body.age,
         req.body.city,
-        req.body.homepage, //not sure if i need req.body.url here
-        req.body.userId
-    ).then(function() {
-        res.redirect("/petiton");
-        //getting the message-> error: relation "user_profiles" does not exist
-    });
+        req.body.url,
+        //not sure if i need req.body.url here
+        req.session.userId
+    )
+        .then(function() {
+            res.redirect("/petition");
+        })
+        .catch(function(err) {
+            res.render("profile", {
+                layout: "main",
+                errorMessage: err.message
+            });
+        });
+    console.log("url.body: ", req.body.url);
 });
 
 app.get("/signers/:city", (req, res) => {
     const city = req.params.city;
-    db.getCity(city).then(function(signers) {
+    db.getSignersByCity(city).then(function(signers) {
         res.render("signers", {
             layout: "main",
             signers: signers.rows
@@ -157,6 +174,8 @@ app.post("/login", middleware.requireLoggedOutUser, function(req, res) {
                     .then(function(bool) {
                         if (bool == true) {
                             req.session.userId = password.rows[0].id;
+                            req.session.sigId = password.rows[0].sig;
+
                             res.redirect("/petition");
                         } else {
                             res.render("login", {
@@ -168,6 +187,7 @@ app.post("/login", middleware.requireLoggedOutUser, function(req, res) {
                     });
             })
             .catch(function(err) {
+                console.log("error: ", err);
                 res.render("login", {
                     layout: "main",
                     errorMessage: "Invalid email address or password"
@@ -249,7 +269,7 @@ app.post("/petition", (req, res) => {
         .catch(function(err) {
             console.log("error: ", err);
             res.render("petition", {
-                errorMessage: err.message,
+                errorMessage: "Something went wrong!",
                 layout: "main"
             });
         });
