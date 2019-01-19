@@ -17,3 +17,15 @@
     bottom: 0px;
     margin: 0px auto;
  */
+
+a {
+    text-decoration: none;
+}
+
+li {
+    list-style-type: none;
+}
+
+.links {
+    margin-left: 0;
+}
