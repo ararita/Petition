@@ -54,6 +54,17 @@ app.use(function(req, res, next) {
     }
 });
 
+const checkUrl = function(link) {
+    if (
+        !link.startsWith("http://") &&
+        !link.startsWith("https://") &&
+        !link.startsWith("//")
+    ) {
+        link = null;
+    }
+    return link;
+};
+
 //route handler
 
 app.get("/", (req, res) => {
@@ -130,7 +141,12 @@ app.get("/profile", (req, res) => {
 });
 
 app.post("/profile", (req, res) => {
-    db.addProfile(req.body.age, req.body.city, req.body.url, req.session.userId)
+    db.addProfile(
+        req.body.age,
+        req.body.city,
+        checkUrl(req.body.url),
+        req.session.userId
+    )
         .then(function() {
             res.redirect("/petition");
         })
@@ -172,12 +188,12 @@ app.post("/profile/edit", function(req, res) {
                 db.updateProfile(
                     req.body.age,
                     req.body.city,
-                    req.body.url,
+                    checkUrl(req.body.url),
                     req.session.userId
                 )
             ])
-                .then(() => {
-                    res.redirect("/petition");
+                .then(function() {
+                    res.redirect("/thanks");
                 })
                 .catch(function(result) {
                     res.render("edit", {
@@ -202,12 +218,12 @@ app.post("/profile/edit", function(req, res) {
             db.updateProfile(
                 req.body.age,
                 req.body.city,
-                req.body.url,
+                checkUrl(req.body.url),
                 req.session.userId
             )
         ])
             .then(() => {
-                res.redirect("/petition");
+                res.redirect("/thanks");
             })
             .catch(function(err) {
                 "Something went wrong!";
@@ -278,6 +294,23 @@ app.get("/thanks", middleware.requireSiganture, function(req, res) {
         })
         .catch(function(err) {
             res.render("petition", {
+                layout: "main",
+                errorMessage: err.message
+            });
+        });
+});
+
+app.post("/thanks", (req, res) => {
+    db.deleteSig(req.session.userId)
+        .then(() => {
+            req.session.sigId = null; //deleting from cookie
+        })
+        .then(() => {
+            res.redirect("/petition");
+        })
+        .catch(err => {
+            console.log(err);
+            res.render("thanks", {
                 layout: "main",
                 errorMessage: err.message
             });
