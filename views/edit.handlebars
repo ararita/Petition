@@ -1,0 +1,20 @@
+
+<h2>You can edit your profile below:</h2>
+
+{{#if errorMessage}}
+<h4>{{errorMessage}}</h4>
+{{/if}}
+
+<form action="/profile/edit" method="post">
+
+    <input name="first" placeholder="first name" value="{{first}}">
+    <input name="last" placeholder="last name" value="{{last}}">
+    <input type="email" placeholder="email address" name="email" value="{{email}}">
+    <input type="password" id="pass" placeholder="new password (optional)" name="password">
+    <input type="age" placeholder="age" name="age" value="{{age}}">
+    <input type="city" placeholder="city" name="city" value="{{city}}">
+    <input type="homepage" placeholder="homepage" name="homepage" value="{{homepage}}">
+    <input type="hidden" name="_csrf" value="{{csrfToken}}">
+    <button id="edit-button">Update</button>
+
+</form>
