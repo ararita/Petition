@@ -166,3 +166,12 @@ module.exports.updateProfile = function(age, city, homepage, userId) {
         ]
     );
 };
+
+module.exports.deleteSig = function(userId) {
+    return db.query(
+        `DELETE 
+       FROM signatures
+       WHERE user_id = $1`,
+        [userId]
+    );
+};
