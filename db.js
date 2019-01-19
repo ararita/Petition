@@ -71,7 +71,6 @@ module.exports.getSignersByCity = function(city) {
 //         .catch(err => {
 //             console.log(err);
 //         });
-// }; ovo vise ne koristimo jer smo dodali get city
 
 module.exports.getSig = function(sigId) {
     return db.query(
@@ -108,7 +107,6 @@ module.exports.getUserPass = function(email) {
         [email]
     );
 };
-//sig is a nickname for the id of signature
 
 module.exports.getUserId = function(email) {
     return db.query(
@@ -116,5 +114,55 @@ module.exports.getUserId = function(email) {
         FROM users
         WHERE email = $1`,
         [email]
+    );
+};
+
+module.exports.editProfileInfo = function(id) {
+    return db.query(
+        `SELECT users.first AS first, users.last AS last, users.email AS email, p.age AS age, p.city AS city, p.url AS url
+       FROM users
+       LEFT JOIN user_profiles AS p
+       ON users.id = p.user_id
+       WHERE users.id = $1`,
+        [id]
+    );
+};
+
+module.exports.updateUserWithNewPass = function(
+    first,
+    last,
+    email,
+    hash,
+    userId
+) {
+    return db.query(
+        `UPDATE users
+        SET first = $1, last = $2, email = $3, password = $4
+        WHERE id = $5`,
+        [first, last, email, hash, userId]
+    );
+};
+
+module.exports.updateUserWithoutNewPass = function(first, last, email, userId) {
+    return db.query(
+        `UPDATE users
+    SET first = $1, last = $2, email = $3
+    WHERE id = $4`,
+        [first, last, email, userId]
+    );
+};
+
+module.exports.updateProfile = function(age, city, homepage, userId) {
+    return db.query(
+        `INSERT INTO user_profiles (age, city,  url, user_id)
+	        VALUES ($1, $2, $3, $4)
+	        ON CONFLICT (user_id)
+	        DO UPDATE SET age = $1, city = $2, url = $3`,
+        [
+            age ? Number(age) : null || null,
+            city || null,
+            homepage || null,
+            userId
+        ]
     );
 };
