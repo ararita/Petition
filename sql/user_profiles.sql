@@ -5,6 +5,6 @@ id SERIAL PRIMARY KEY,
 age INT,
 city VARCHAR(100),
 url VARCHAR (400),
-user_id INT REFERENCES users(id) NOT NULL
+user_id INT REFERENCES users(id) NOT NULL UNIQUE
 
 );
