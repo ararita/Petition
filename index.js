@@ -130,13 +130,7 @@ app.get("/profile", (req, res) => {
 });
 
 app.post("/profile", (req, res) => {
-    db.addProfile(
-        req.body.age,
-        req.body.city,
-        req.body.url,
-        //not sure if i need req.body.url here
-        req.session.userId
-    )
+    db.addProfile(req.body.age, req.body.city, req.body.url, req.session.userId)
         .then(function() {
             res.redirect("/petition");
         })
@@ -146,7 +140,79 @@ app.post("/profile", (req, res) => {
                 errorMessage: err.message
             });
         });
-    console.log("url.body: ", req.body.url);
+    // console.log("url.body: ", req.body.url);
+});
+
+app.get("/profile/edit", (req, res) => {
+    db.editProfileInfo(req.session.userId).then(result => {
+        res.render("edit", {
+            layout: "main",
+            first: result.rows[0].first,
+            last: result.rows[0].last,
+            email: result.rows[0].email,
+            age: result.rows[0].age || null,
+            city: result.rows[0].city || null,
+            homepage: result.rows[0].url || null
+        });
+    });
+});
+//not sure why url and not homepage in result.rows[0].url || null
+
+app.post("/profile/edit", function(req, res) {
+    if (req.body.password !== "") {
+        bcrypt.hashPassword(req.body.password).then(hash => {
+            Promise.all([
+                db.updateUserWithNewPass(
+                    req.body.first,
+                    req.body.last,
+                    req.body.email,
+                    hash,
+                    req.session.userId
+                ),
+                db.updateProfile(
+                    req.body.age,
+                    req.body.city,
+                    req.body.url,
+                    req.session.userId
+                )
+            ])
+                .then(() => {
+                    res.redirect("/petition");
+                })
+                .catch(function(result) {
+                    res.render("edit", {
+                        layout: "main",
+                        first: result.rows[0].first,
+                        last: result.rows[0].last,
+                        email: result.rows[0].email,
+                        age: result.rows[0].age || null,
+                        city: result.rows[0].city || null,
+                        homepage: result.rows[0].url || null
+                    });
+                });
+        });
+    } else {
+        Promise.all([
+            db.updateUserWithoutNewPass(
+                req.body.first,
+                req.body.last,
+                req.body.email,
+                req.session.userId
+            ),
+            db.updateProfile(
+                req.body.age,
+                req.body.city,
+                req.body.url,
+                req.session.userId
+            )
+        ])
+            .then(() => {
+                res.redirect("/petition");
+            })
+            .catch(function(err) {
+                "Something went wrong!";
+            });
+    }
 });
 
 app.get("/signers/:city", (req, res) => {
