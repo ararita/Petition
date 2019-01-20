@@ -1,14 +1,43 @@
-* {
+/* * {
     -webkit-box-sizing: border-box;
     box-sizing: border-box;
-    /* background: lightsalmon; */
+    background: #9e7b8c;
     margin: 20px;
+    font-family: monospace;
+} */
+
+body {
+    display: flex;
+    height: 100vh;
+    width: 100vw;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    font-family: monospace;
+    background: #9e7b8c;
+
+    /* overflow-x: hidden; */
+    /* background-size: cover; */
 }
 
 .canvas {
     position: relative;
-    border: black dotted 3px;
+    border: black dotted 1px;
 }
+
+form {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    /* justify-content: space-around; */
+    align-items: center;
+}
+
+input {
+    border: 1px solid #cccccc;
+    margin: 10px;
+}
+
 /* width: 900px;
     height: 180px;
     top: 0px;

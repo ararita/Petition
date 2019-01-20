@@ -3,4 +3,15 @@
   <img src="{{sig}}">
 
 
-  <h3>Enter<a href="/signers">here</a>to see other signers</h3>
+  <a href="/signers">See who else has signed</a>
+
+<div class="routes">
+  <a href="/profile/edit">Edit your profile</a>
+
+<a href="/logout">Log out</a>
+
+  <form action="/thanks" method="post" >
+        <input type="hidden" name="_csrf" value="{{csrfToken}}">
+        <button id="deleteSig" >Delete signature</button>
+    </form>
+<div>
