@@ -1,12 +1,12 @@
-<p>What's the purpose of winter anyway if theres no snow</p>
+<h2>Raising voice for the ones who can't define what they want to complain about, but they still want to whine around just for the sake of whining. All that from the comfort of their livingroom of course.<br>If you're one of us, sign the petition and then go whine how no petition ever changed anything.</h2>
 
 
 
 {{#if errorMessage}}
 <h4>{{errorMessage}}</h4>
 {{/if}}
-
-<form autocomplete="off" method="POST">
+<div class="main">
+<form  method="POST">
 
         <input type="hidden" name="signature" id="sig-field" value="">
         <input name="_csrf" type="hidden" value="{{csrfToken}}">
@@ -16,5 +16,5 @@
     <div class="canvas">
         <canvas id="canv" width="900" height="180"></canvas>
     </div>
-
+</div>
 </form>

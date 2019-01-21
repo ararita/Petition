@@ -1,19 +1,22 @@
-<p>You need to register to sign the petition.</p>
+<h2 class="h2register">You need to register to sign the petition.</h2>
 
 
 {{#if errorMessage}}
 <h4>{{errorMessage}}</h4>
 {{/if}}
-
+<div class="main">
 <form autocomplete="off" method="POST">
+    <div class="regInput">
         <input name="first" placeholder="first name" required>
         <input name="last" placeholder="last name" required>
         <input type="email" placeholder="email address" required name="email">
         <input type="password" id="pass" placeholder="password" name="password" required>
         <input name="_csrf" type="hidden" value="{{csrfToken}}">
-        <button id="submit-button">submit</button>
-
+        <div id="submit-button">
+        <button>submit</button>
+    </div>
+    </div>
 </form>
+<h2 class="h2register">If you are already a member click<a class="regLink" href="/login"> here </a>to log in</h2>
 
-
-<p>If you are already a member click<a href="/login">here</a>to log in</p>
+</div>

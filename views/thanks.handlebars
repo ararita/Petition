@@ -1,17 +1,17 @@
 
-  <h3>Thank you for signing our petition!</h3>
+<h3>Thank you for signing our petition!</h3>
+
+<div class="thankswrapper">
+
   <img src="{{sig}}">
-
-
-  <a href="/signers">See who else has signed</a>
-
-<div class="routes">
+  <div class="thanks-link">
+<a href="/signers">See who else has signed</a>
   <a href="/profile/edit">Edit your profile</a>
-
 <a href="/logout">Log out</a>
-
-  <form action="/thanks" method="post" >
+<form action="/thanks" method="post">
         <input type="hidden" name="_csrf" value="{{csrfToken}}">
-        <button id="deleteSig" >Delete signature</button>
+        <button id="deleteSig">Delete signature</button>
     </form>
-<div>
+</div>
+
+</div>

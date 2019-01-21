@@ -17,6 +17,8 @@ app.use(
     })
 );
 
+app.use(express.static(__dirname + "/public"));
+
 app.use(function(req, res, next) {
     if (!req.session.userId && req.url != "/register" && req.url != "/login") {
         res.redirect("/register");
@@ -35,7 +37,6 @@ app.engine("handlebars", hb());
 app.set("view engine", "handlebars");
 
 // app.use(require("cookie-parser")()); --ovo ne trebamo vise jer koristimo cookie session middleware
-app.use(express.static(__dirname + "/public"));
 
 app.use(csurf()); //mora biti iza cookie sessiona i body parsera
 

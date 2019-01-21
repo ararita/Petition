@@ -1,12 +1,8 @@
-/* * {
-    -webkit-box-sizing: border-box;
-    box-sizing: border-box;
-    background: #9e7b8c;
-    margin: 20px;
-    font-family: monospace;
-} */
-
 body {
+    /* -webkit-box-sizing: border-box;
+    box-sizing: border-box; */
+    height: 100vh;
+
     display: flex;
     height: 100vh;
     width: 100vw;
@@ -14,10 +10,25 @@ body {
     justify-content: space-between;
     align-items: center;
     font-family: monospace;
-    background: #9e7b8c;
+    background: linear-gradient(#d14f64, #ecf8eb);
+    overflow: hidden;
 
     /* overflow-x: hidden; */
     /* background-size: cover; */
+}
+
+.main: {
+    display: flex;
+
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+}
+/* register  */
+.h2register {
+    /* position: absolute; */
+    /* top: 80px; */
+    font-weight: lighter;
 }
 
 .canvas {
@@ -26,29 +37,70 @@ body {
 }
 
 form {
-    position: relative;
+    /* position: relative; */
     display: flex;
     flex-direction: column;
-    /* justify-content: space-around; */
+    justify-content: space-around;
     align-items: center;
+    top: 30px;
 }
 
 input {
-    border: 1px solid #cccccc;
-    margin: 10px;
+    display: flex;
+    justify-content: space-around;
+    padding-left: 1rem;
+    margin-bottom: 5px;
+    height: 34px;
+    width: 100px;
+    border-radius: 3px;
+    border: 1px solid transparent;
+    border-bottom: 1px solid #ddd;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.39), 0 -1px 1px #fff,
+        0 1px 0 #fff;
 }
 
-/* width: 900px;
-    height: 180px;
-    top: 0px;
-    left: 0px;
-    right: 0px;
-    bottom: 0px;
-    margin: 0px auto;
- */
+.regInput {
+    margin-top: 20%;
+}
 
 a {
+    /* text-decoration: none; */
+    color: #dddd;
+    font-size: 30px;
+    /* margin-left: 25%; */
+    margin-top: 3%;
+}
+
+.regLink {
     text-decoration: none;
+}
+
+#submit-button {
+    text-align: center;
+}
+/* thanks */
+.thankswrapper {
+    width: 600px;
+    text-align: center;
+    /* display: flex;
+    flex-direction: column;
+    align-content: center; */
+    /* align-items: center; */
+}
+
+.thanks-link {
+    display: flex;
+    flex-direction: column;
+}
+#deleteSig {
+    margin-top: 20px;
+    padding: 15px 32px;
+    font-size: 16px;
+    font-family: monospace;
+}
+
+img {
+    margin-left: 20%;
 }
 
 li {
@@ -56,5 +108,14 @@ li {
 }
 
 .links {
+    text-decoration: none;
+
     margin-left: 0;
+    font-size: 30px;
+}
+signers {
+    font-size: 30px;
+}
+
+main {
 }
