@@ -2,3 +2,6 @@ node_modules
 .DS_Store
 package-lock.json
 secrets.json
+auth-notes
+heroku
+Notes petition pt4, pt5 

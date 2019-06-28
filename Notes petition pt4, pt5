@@ -104,7 +104,7 @@ part5:
 adding edit profile homepage when user goes to edit page, some input fields should be already there, except password.
 
 get route:
-new hanldebars template, <form> tag: input foleds and a button (input filed for every single category (7 inputs -first, last, email, password, age, city, homepage; plus the 8th hidden csrf))
+new hanldebars template, <form> tag: input fields and a button (input filed for every single category (7 inputs -first, last, email, password, age, city, homepage; plus the 8th hidden csrf))
 
 we need data base to get the ones that are prepopulated: but they're in two tables, zato trebamo JOIN query
 
@@ -113,9 +113,9 @@ post request:
 
 what to do when user clicks update button:
 
-inside of req.body, we will have all of the infos feom all of the fields and the value of them.
+inside of req.body, we will have all of the infos from all of the fields and the value of them.
 
-so in server, we need ot handle 2 situations:
+so in server, we need to handle 2 situations:
 1. what to do if user DOES provide a new password
 2. what if DOESN'T
 
@@ -196,3 +196,17 @@ so---> in server
 
 delete query:
 DELETE FROM nameOfTable WHERE id = $1 (when the query runs, the $ will be replaced with users id, npr 4);
+
+
+
+
+
+
+if (req.body.password !== '') {
+	            bcrypt.hash(req.body.password).then(hashedPassword => {
+	                Promise.all([
+	                    db.updateUserWithPassword(req.body.first, req.body.last, req.body.email, hashedPassword, req.session.userId),
+	                    db.updateProfile(req.body.age, req.body.city, url, req.session.userId)
+	                ]).then(() => {
+	                    res.redirect('/petition')
+	                }).catch
