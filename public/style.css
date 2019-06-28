@@ -1,8 +1,5 @@
 body {
-    /* -webkit-box-sizing: border-box;
-    box-sizing: border-box; */
     height: 100vh;
-
     display: flex;
     height: 100vh;
     width: 100vw;
@@ -12,22 +9,17 @@ body {
     font-family: monospace;
     background: linear-gradient(#d14f64, #ecf8eb);
     overflow: hidden;
-
-    /* overflow-x: hidden; */
-    /* background-size: cover; */
 }
 
 .main: {
     display: flex;
-
     flex-direction: column;
     justify-content: space-between;
     align-items: center;
 }
+
 /* register  */
 .h2register {
-    /* position: absolute; */
-    /* top: 80px; */
     font-weight: lighter;
 }
 
@@ -37,7 +29,6 @@ body {
 }
 
 form {
-    /* position: relative; */
     display: flex;
     flex-direction: column;
     justify-content: space-around;
@@ -64,10 +55,8 @@ input {
 }
 
 a {
-    /* text-decoration: none; */
     color: #dddd;
     font-size: 30px;
-    /* margin-left: 25%; */
     margin-top: 3%;
 }
 
@@ -78,20 +67,18 @@ a {
 #submit-button {
     text-align: center;
 }
+
 /* thanks */
 .thankswrapper {
     width: 600px;
     text-align: center;
-    /* display: flex;
-    flex-direction: column;
-    align-content: center; */
-    /* align-items: center; */
 }
 
 .thanks-link {
     display: flex;
     flex-direction: column;
 }
+
 #deleteSig {
     margin-top: 20px;
     padding: 15px 32px;
@@ -109,13 +96,9 @@ li {
 
 .links {
     text-decoration: none;
-
     margin-left: 0;
     font-size: 30px;
 }
 signers {
     font-size: 30px;
-}
-
-main {
 }

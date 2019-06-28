@@ -36,9 +36,7 @@ app.engine("handlebars", hb());
 
 app.set("view engine", "handlebars");
 
-// app.use(require("cookie-parser")()); --ovo ne trebamo vise jer koristimo cookie session middleware
-
-app.use(csurf()); //mora biti iza cookie sessiona i body parsera
+app.use(csurf()); //has to stand after cookie session and body parser
 
 app.use((req, res, next) => {
     res.locals.csrfToken = req.csrfToken();
@@ -46,7 +44,6 @@ app.use((req, res, next) => {
     next();
 });
 
-//to make sure that person can't navigate anywhere if isn't registered
 app.use(function(req, res, next) {
     if (!req.session.userId && req.url != "/register" && req.url != "/login") {
         res.redirect("/register");
@@ -70,7 +67,6 @@ const checkUrl = function(link) {
 
 app.get("/", (req, res) => {
     if (req.session.sigId) {
-        //ako vec postoji signature u db-u
         res.redirect("/thanks");
     } else {
         res.render("petition", {
@@ -92,7 +88,7 @@ app.post("/register", middleware.requireLoggedOutUser, function(req, res) {
         !req.body.email ||
         !req.body.password
     ) {
-        console.log(req.body);
+        // console.log(req.body);
         res.render("register", {
             layout: "main",
             errorMessage:
@@ -114,7 +110,6 @@ app.post("/register", middleware.requireLoggedOutUser, function(req, res) {
                     })
                     .catch(function(err) {
                         if (err) {
-                            // console.log("ERROR", err);
                             res.render("register", {
                                 layout: "main",
                                 errorMessage:
@@ -122,7 +117,7 @@ app.post("/register", middleware.requireLoggedOutUser, function(req, res) {
                             });
                         }
                     });
-            }) //check with somebody what kind of error we handle here
+            })
             .catch(function(err) {
                 if (err) {
                     // console.log("ERROR", err);
@@ -173,7 +168,6 @@ app.get("/profile/edit", (req, res) => {
         });
     });
 });
-//not sure why url and not homepage in result.rows[0].url || null
 
 app.post("/profile/edit", function(req, res) {
     if (req.body.password !== "") {
@@ -226,9 +220,12 @@ app.post("/profile/edit", function(req, res) {
             .then(() => {
                 res.redirect("/thanks");
             })
-            .catch(function(err) {
+            .catch(() => {
                 "Something went wrong!";
             });
+        // .catch(function(err) {
+        //     "Something went wrong!";
+        // });
     }
 });
 
@@ -269,8 +266,8 @@ app.post("/login", middleware.requireLoggedOutUser, function(req, res) {
                         }
                     });
             })
-            .catch(function(err) {
-                console.log("error: ", err);
+            .catch(() => {
+                // console.log("error: ", err);
                 res.render("login", {
                     layout: "main",
                     errorMessage: "Invalid email address or password"
@@ -287,10 +284,10 @@ app.post("/login", middleware.requireLoggedOutUser, function(req, res) {
 app.get("/thanks", middleware.requireSiganture, function(req, res) {
     db.getSig(req.session.sigId)
         .then(function(result) {
-            console.log("result final: ", result.rows);
+            // console.log("result final: ", result.rows);
             res.render("thanks", {
                 layout: "main",
-                sig: result.rows[0].signature //this is url
+                sig: result.rows[0].signature
             });
         })
         .catch(function(err) {
@@ -304,13 +301,13 @@ app.get("/thanks", middleware.requireSiganture, function(req, res) {
 app.post("/thanks", (req, res) => {
     db.deleteSig(req.session.userId)
         .then(() => {
-            req.session.sigId = null; //deleting from cookie
+            req.session.sigId = null;
         })
         .then(() => {
             res.redirect("/petition");
         })
         .catch(err => {
-            console.log(err);
+            // console.log(err);
             res.render("thanks", {
                 layout: "main",
                 errorMessage: err.message
@@ -319,10 +316,9 @@ app.post("/thanks", (req, res) => {
 });
 
 app.get("/signers", middleware.requireSiganture, function(req, res) {
-    console.log("whatever");
     db.getSigners()
         .then(function(signers) {
-            console.log("signers: ", signers);
+            // console.log("signers: ", signers);
             res.render("signers", {
                 signers: signers.rows,
                 layout: "main"
@@ -335,12 +331,6 @@ app.get("/signers", middleware.requireSiganture, function(req, res) {
             });
         });
 });
-
-// app.get("/profile", (req, res) => {
-//     res.render("profile", {
-//         layout: "main"
-//     });
-// });
 
 app.get("/petition", function(req, res) {
     if (req.session.sigId) {
@@ -360,14 +350,14 @@ app.post("/petition", (req, res) => {
 
     db.addSignature(signature, userId)
         .then(result => {
-            console.log("result: ", result);
+            // console.log("result: ", result);
             req.session.sigId = result.rows[0].id;
             res.cookie("personCookie", firstName + lastName);
             res.redirect("/thanks");
-            console.log("req.body: ", req.body);
+            // console.log("req.body: ", req.body);
         })
-        .catch(function(err) {
-            console.log("error: ", err);
+        .catch(() => {
+            // console.log("error: ", err);
             res.render("petition", {
                 errorMessage: "Something went wrong!",
                 layout: "main"

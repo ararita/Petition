@@ -3,7 +3,6 @@ const spicedPg = require("spiced-pg");
 // const db = spicedPg(`postgres:${dbUser}:${dbPass}@localhost:5432/petition`);
 
 let db;
-//if 'if' block runs, means our website sould talk to herokus postgres database
 if (process.env.DATABASE_URL) {
     db = spicedPg(process.env.DATABASE_URL);
 } else {
@@ -59,18 +58,6 @@ module.exports.getSignersByCity = function(city) {
         [city]
     );
 };
-
-// module.exports.getSigners = function() {
-//     //am i using it?
-//     return db
-//         .query(
-//             `SELECT first, last FROM signatures
-//         LEFT JOIN users
-//         ON signatures.user_id = users.id`
-//         )
-//         .catch(err => {
-//             console.log(err);
-//         });
 
 module.exports.getSig = function(sigId) {
     return db.query(
@@ -169,7 +156,7 @@ module.exports.updateProfile = function(age, city, homepage, userId) {
 
 module.exports.deleteSig = function(userId) {
     return db.query(
-        `DELETE 
+        `DELETE
        FROM signatures
        WHERE user_id = $1`,
         [userId]
